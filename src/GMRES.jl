@@ -1,54 +1,60 @@
 using LinearAlgebra
 
-function mygmres(I, b, x0, n, M, A)
+"""
+    mygmres(iters, b, x0, n, M, A)
+Use the GMRES algorithm to solve a linear system of equations. 
+
+**Inputs**
+- iters::Int - The maximum number of iterations to take.
+- b::Vector{Float} - The constants of the system. 
+- x0::Vector{Float} - The initial guess of the solution.
+- n::Int -  The dimension of the problem. 
+- M::Matrix{Float} - The left-preconditioner matrix.
+- A::Matrix{Float} - The coefficients of the system. 
+"""
+function mygmres(iters, b, x0, n, M, A; atol=1e-6)
+    ### Preconditioning
     M_inv = inv(M)
     A = M_inv*A
     b = M_inv*b
 
-    v = zeros(length(b),I+1)
-    ω = zeros(length(b))
-    h = zeros(I+1,I)
+    ### Initialize data storage. 
+    v = zeros(length(b),iters+1)
+    omega = zeros(length(b))
+    h = zeros(iters+1,iters)
 
+    ### Initial errors and Krylov vector. 
     r0 = b - A*x0
-    β = norm(r0)
-    v[:,1] = r0/β
+    beta = norm(r0)
+    v[:,1] = r0/beta
 
-    for j=1:I
-        ω .= A*v[:,j]
+    ### Arnoldi Iteration to get the Krylov vectors. 
+    for j=1:iters
+        omega .= A*v[:,j]
+
         for i=1:j
-            h[i,j] = dot(ω,v[:,i])
-            ω -= h[i,j]*v[:,i]
+            h[i,j] = dot(omega,v[:,i])
+            omega -= h[i,j]*v[:,i]
         end
-        h[j+1,j] = norm(ω)
-        if h[j+1,j] == 0
-            I = j
+        h[j+1,j] = norm(omega)
+
+        #Avoid dividing by zero
+        if h[j+1,j] == 0 #Todo: Should probably be a isapprox
+            iters = j
             break
         end
-        v[:,j+1] .= ω/h[j+1,j]
+
+        # Calculate the next Krylov vector
+        v[:,j+1] .= omega/h[j+1,j]
     end
-    e1 = zeros(I+1)
+
+    ### Error vector? 
+    e1 = zeros(iters+1)
     e1[1] = 1
-    ym = h\(β*e1)
+
+    ### Calculate the result
+    ym = h\(beta*e1)
     xm = x0 + v[:,1:end-1]*ym
-    return xm
-end
-
-function run_test()
-
-    A = [1.0 4 7; 2 9 7; 5 8 3]
-    b = [1; 8; 2]
-
-    x0 = [0,0,0]
-    return mygmres(3, b, x0, 3, I(3), A), A\b
-
-end
-
-function run_test_big(;n=20,iters=10)
     
-    A = rand(n,n)
-    b = rand(n)
-    x0 = zeros(n)
-
-    return max((mygmres(iters,b,x0,n,I(n),A) .- A\b)...)
-
+    return xm
 end
