@@ -5,7 +5,7 @@ function mygmres(I, b, x0, n, M, A)
     A = M_inv*A
     b = M_inv*b
 
-    v = zeros(length(b),I)
+    v = zeros(length(b),I+1)
     ω = zeros(length(b))
     h = zeros(I+1,I)
 
@@ -17,30 +17,21 @@ function mygmres(I, b, x0, n, M, A)
         ω .= A*v[:,j]
         for i=1:j
             h[i,j] = dot(ω,v[:,i])
-            ω -= h[i,j]*v[:,j]
+            ω -= h[i,j]*v[:,i]
         end
         h[j+1,j] = norm(ω)
         if h[j+1,j] == 0
             I = j
             break
         end
-        v[:,j+1] = ω/h[j+1,j]
+        v[:,j+1] .= ω/h[j+1,j]
     end
     e1 = zeros(I+1)
     e1[1] = 1
-    ym = h\(β*e1) # use efficient Hessenberg algorithm
-    @show size(h) β size(e1) size(v) size(ym) size(x0) ω v h
-    xm = x0 + v*ym
+    ym = h\(β*e1)
+    xm = x0 + v[:,1:end-1]*ym
     return xm
 end
-
-#=n = 10
-A = rand(n,n)
-b = rand(n)
-x0 = rand(n)
-
-first = A\b
-second = mygmres(2,b,x0,n,I(n),A)=#
 
 function run_test()
 
@@ -48,6 +39,16 @@ function run_test()
     b = [1; 8; 2]
 
     x0 = [0,0,0]
-    return mygmres(3, b, x0, 3, I(3), A)
+    return mygmres(3, b, x0, 3, I(3), A), A\b
+
+end
+
+function run_test_big(;n=20,iters=10)
+    
+    A = rand(n,n)
+    b = rand(n)
+    x0 = zeros(n)
+
+    return max((mygmres(iters,b,x0,n,I(n),A) .- A\b)...)
 
 end
