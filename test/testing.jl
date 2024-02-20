@@ -91,19 +91,37 @@ include("../src/fea.jl")
         plot!(testplt, xvec, ymat[:, basis_idx], lab="Basis $basis_idx")
     end
     vline!(testplt, mesh, lab=false, lw=2, alpha=0.5, linecolor=:black)
-    # display(testplt)
+    display(testplt)
     # savefig(testplt, "BasisFunctions.png")
 
 end
 
 @testset "evaluate_basis" begin
-    ### Plot shape function. 
+    ### test if it returns zeros at the edge of the domain
     mesh = meshproblem(;n_nodes=6)
-    xvec = append!(collect(range(0, 1, 100)), mesh)
+    xvec = append!(collect(range(0, 1, 100)), mesh, [mesh[2]/2, (mesh[end-1]+mesh[end])/2, 0.5])
     sort!(unique!(xvec))
 
-    ymat = zeros(length(xvec), length(mesh)-2)
     yshape = evaluate_basis.(xvec, Ref(mesh))
+
+    @test yshape[1]==0
+    @test yshape[end]==0
+
+    ### Test the sloped regions
+    idx = findfirst(i->i==mesh[2]/2, xvec)
+    @test yshape[idx]==0.5
+
+    idx = findfirst(i->i==(mesh[end-1]+mesh[end])/2, xvec)
+    @test yshape[idx]==0.5
+
+    ### Test interior region
+    idx = findfirst(i->i==0.5, xvec)
+    @test yshape[idx]==1
+
+
+    ### Plot shape function. 
+    ymat = zeros(length(xvec), length(mesh)-2)
+    
 
     testplt = plot(xaxis="Domain", yaxis="Basis functions", leg=:right)
     for i = 2:length(mesh)-1
