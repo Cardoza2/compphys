@@ -17,13 +17,16 @@ function hatfunction(x, i, mesh)
         error("hatfunction(): i should never equal $n_mesh. ")
     end
 
-    if mesh[i-1]<=x<=mesh[i+1]
-        if mesh[i-1]<=x
+    #Is x in the domain of the basis function? 
+    if mesh[i-1]<=x<=mesh[i+1] 
+        #Conditional to make a piecewise hat function. 
+        if x<=mesh[i]
             return (x-mesh[i-1])/(mesh[i]-mesh[i-1])
         elseif x<mesh[i+1]
             return 1 - (x-mesh[i])/(mesh[i+1]-mesh[i])
         end
-    else
+        return nothing
+    else #Outside the domain of the basis function. 
         return 0
     end
 end

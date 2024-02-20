@@ -1,10 +1,26 @@
 using Test, LinearAlgebra
 
 include("../src/GMRES.jl")
+include("../src/fea.jl")
 
 
 @testset "hatfunction" begin
+    mesh = meshproblem()
 
+    ### Test at the middle of the elements
+    y_test = [hatfunction(mesh[i], i, mesh) for i = 2:length(mesh)-1]
+    @test y_test==ones(48)
+
+    ### Test in the domain
+    x_test = (mesh[2]+mesh[1])/2
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0.5
+    @test isapprox(y_test, y_gold)
+
+    ### Test outside of the domain
+
+
+    ### Test that you can't do basis functions on the first or last element. 
 end
 
 @testset "GMRES" begin
