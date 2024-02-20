@@ -22,10 +22,13 @@ function hatfunction(x, i, mesh)
         #Conditional to make a piecewise hat function. 
         if x<=mesh[i]
             return (x-mesh[i-1])/(mesh[i]-mesh[i-1])
-        elseif x<mesh[i+1]
+        elseif x<=mesh[i+1]
             return 1 - (x-mesh[i])/(mesh[i+1]-mesh[i])
         end
-        return nothing 
+
+        @warn("hatfunction(): You've somehow entered a case that can't happen.")
+        return 0 
+        
     else #Outside the domain of the basis function. 
         return 0
     end

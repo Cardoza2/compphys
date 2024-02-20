@@ -17,8 +17,48 @@ include("../src/fea.jl")
     y_gold = 0.5
     @test isapprox(y_test, y_gold)
 
-    ### Test outside of the domain
+    x_test = (mesh[2]+mesh[3])/2
+    y_test = hatfunction(x_test, 2, mesh)
+    @test isapprox(y_test, y_gold)
 
+    ### Test the edges of the domain.
+    #Test the lower edge 
+    x_test = mesh[1]
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0
+    @test isapprox(y_test, y_gold)
+
+    #Test that just inside the domain is infact inside the domain
+    x_test = mesh[1]+eps()
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0
+    @test isapprox(y_test, y_gold, atol=1e-12)
+    @test y_test>0
+
+    #Test the upper edge
+    x_test = mesh[3]
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0
+    @test isapprox(y_test, y_gold)
+
+    #Test that just inside the domain is infact inside the domain
+    x_test = mesh[3]-eps()
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0
+    @test isapprox(y_test, y_gold, atol=1e-12)
+    @test y_test>0
+
+
+    ### Test outside of the domain
+    x_test = mesh[3]+eps()
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0
+    @test y_test==y_gold
+
+    x_test = 0.75
+    y_test = hatfunction(x_test, 2, mesh)
+    y_gold = 0
+    @test y_test==y_gold
 
     ### Test that you can't do basis functions on the first or last element. 
 end
