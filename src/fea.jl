@@ -17,10 +17,12 @@ function hatfunction(x, i, mesh)
         error("hatfunction(): i should never equal $n_mesh. ")
     end
 
-    if mesh[i-1]<=x
-        return (x-mesh[i-1])/(mesh[i]-mesh[i-1])
-    elseif x<mesh[i+1]
-        return 1 - (x-mesh[i])/(mesh[i+1]-mesh[i])
+    if mesh[i-1]<=x<=mesh[i+1]
+        if mesh[i-1]<=x
+            return (x-mesh[i-1])/(mesh[i]-mesh[i-1])
+        elseif x<mesh[i+1]
+            return 1 - (x-mesh[i])/(mesh[i+1]-mesh[i])
+        end
     else
         return 0
     end
