@@ -1,4 +1,4 @@
-using Test, LinearAlgebra
+using Test, LinearAlgebra, Plots
 
 include("../src/GMRES.jl")
 include("../src/fea.jl")
@@ -61,6 +61,61 @@ include("../src/fea.jl")
     @test y_test==y_gold
 
     ### Test that you can't do basis functions on the first or last element. 
+    try
+        y_test = hatfunction(x_test, 1, mesh)
+    catch err_message
+        @test err_message.msg=="hatfunction(): i should never equal 1."
+    end
+
+    try
+        y_test = hatfunction(x_test, length(mesh), mesh)
+    catch err_message
+        n_mesh = length(mesh) #50
+        err_gold = "hatfunction(): i should never equal $n_mesh. "
+        @test err_message.msg==err_gold
+    end
+
+
+    ### Plot basis functions. 
+    mesh = meshproblem(;n_nodes=6)
+    xvec = append!(collect(range(0, 1, 100)), mesh)
+    sort!(unique!(xvec))
+
+    ymat = zeros(length(xvec), length(mesh)-2)
+
+    testplt = plot(xaxis="Domain", yaxis="Basis functions", leg=:right)
+    for i = 2:length(mesh)-1
+        basis_idx = i-1
+        ymat[:, basis_idx] = hatfunction.(xvec, Ref(i), Ref(mesh))
+        
+        plot!(testplt, xvec, ymat[:, basis_idx], lab="Basis $basis_idx")
+    end
+    vline!(testplt, mesh, lab=false, lw=2, alpha=0.5, linecolor=:black)
+    # display(testplt)
+    # savefig(testplt, "BasisFunctions.png")
+
+end
+
+@testset "evaluate_basis" begin
+    ### Plot shape function. 
+    mesh = meshproblem(;n_nodes=6)
+    xvec = append!(collect(range(0, 1, 100)), mesh)
+    sort!(unique!(xvec))
+
+    ymat = zeros(length(xvec), length(mesh)-2)
+    yshape = evaluate_basis.(xvec, Ref(mesh))
+
+    testplt = plot(xaxis="Domain", yaxis="Basis functions", leg=:right)
+    for i = 2:length(mesh)-1
+        basis_idx = i-1
+        ymat[:, basis_idx] = hatfunction.(xvec, Ref(i), Ref(mesh))
+        
+        plot!(testplt, xvec, ymat[:, basis_idx], lab="Basis $basis_idx")
+    end
+    plot!(testplt, xvec, yshape, lab="Shape Function", lw=1.5, linestyle=:dash)
+    vline!(testplt, mesh, lab=false, lw=2, alpha=0.5, linecolor=:black)
+    display(testplt)
+    # savefig(testplt, "ShapeFunction.png")
 end
 
 @testset "GMRES" begin
