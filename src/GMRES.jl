@@ -5,7 +5,7 @@ function mygmres(I, b, x0, n, M, A)
     A = M_inv*A
     b = M_inv*b
 
-    v = zeros(length(b),I+1)
+    v = zeros(length(b),I)
     ω = zeros(length(b))
     h = zeros(I+1,I)
 
@@ -26,16 +26,28 @@ function mygmres(I, b, x0, n, M, A)
         end
         v[:,j+1] = ω/h[j+1,j]
     end
-    e1 = zeros(length(b))
+    e1 = zeros(I+1)
     e1[1] = 1
-    ym = h\(β*e1)
-    xm = x0 + Vm*ym
+    ym = h\(β*e1) # use efficient Hessenberg algorithm
+    @show size(h) β size(e1) size(v) size(ym) size(x0) ω v h
+    xm = x0 + v*ym
     return xm
 end
 
-A = rand(4,4)
-b = rand(4)
-x0 = rand(4)
+#=n = 10
+A = rand(n,n)
+b = rand(n)
+x0 = rand(n)
 
 first = A\b
-second = mygmres(10,b,x0,4,I(4),A)
+second = mygmres(2,b,x0,n,I(n),A)=#
+
+function run_test()
+
+    A = [1.0 4 7; 2 9 7; 5 8 3]
+    b = [1; 8; 2]
+
+    x0 = [0,0,0]
+    return mygmres(3, b, x0, 3, I(3), A)
+
+end
