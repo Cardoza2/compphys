@@ -25,7 +25,7 @@ function hatfunction(x, i, mesh)
         elseif x<mesh[i+1]
             return 1 - (x-mesh[i])/(mesh[i+1]-mesh[i])
         end
-        return nothing
+        return nothing 
     else #Outside the domain of the basis function. 
         return 0
     end
