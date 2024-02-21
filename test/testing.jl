@@ -91,7 +91,7 @@ include("../src/fea.jl")
         plot!(testplt, xvec, ymat[:, basis_idx], lab="Basis $basis_idx")
     end
     vline!(testplt, mesh, lab=false, lw=2, alpha=0.5, linecolor=:black)
-    display(testplt)
+    # display(testplt)
     # savefig(testplt, "BasisFunctions.png")
 
 end
@@ -132,7 +132,7 @@ end
     end
     plot!(testplt, xvec, yshape, lab="Shape Function", lw=1.5, linestyle=:dash)
     vline!(testplt, mesh, lab=false, lw=2, alpha=0.5, linecolor=:black)
-    display(testplt)
+    # display(testplt)
     # savefig(testplt, "ShapeFunction.png")
 end
 
@@ -140,9 +140,9 @@ end
 
     ### Example 1 in Fan reading
     A = [1.0 4 7; 2 9 7; 5 8 3]
-    b = [1; 8; 2]
+    b = [1.; 8; 2]
 
-    x0 = [0,0,0]
+    x0 = [0.,0,0]
     xstar =  mygmres(3, b, x0, 3, I(3), A)
     xtrue = A\b
 
@@ -151,13 +151,15 @@ end
     
     ### Compare against 
     n = 20
-    A = rand(n,n)
+    A = rand(n, n)
     b = rand(n)
     x0 = zeros(n)
     iters = 20
 
-    err =  max((mygmres(iters,b,x0,n,I(n),A) .- A\b)...)
-    @test isapprox(err, 0, atol=1e-12)
+    y_test = mygmres(iters, b, x0, n, I(n), A; tolerance=1e-12)
+    y_gold = A\b
+    err =  maximum(y_test .- y_gold)
+    @test isapprox(err, 0., atol=1e-12)
     
 end
 
