@@ -22,16 +22,27 @@ function mygmres(iters, b, x0, n, M, A; tolerance=1e-6, verbose::Bool=false)
 
     ### Initialize data storage.
     n = length(b) 
-    v = zeros(n,iters+1)
+    v = zeros(n,iters+1) #Krylov vectors
     omega = zeros(n)
-    h = zeros(iters+1,iters)
-    r0 = zeros(n)
+    h = zeros(iters+1,iters) #Hessenberg matrix
+    r0 = zeros(n) #Residual vector
+    ym = zeros(iters+1)
+
+    e1 = zeros(iters+1) #Error vector? 
+    e1[1] = 1
 
     for i = 2:iters #todo: skipping some might be more efficient
         v_i = view(v, :, 1:i+1) 
         h_i = view(h, 1:i+1, 1:i)
+        e_i = view(e1, 1:i+1)
+        ym_i = view(ym, 1:i)
 
-        x_sol .= mygmres!(v_i, h_i, omega, r0, x0, A, b, i, i-1)
+        Arnoldi!(v_i, h_i, omega, r0, x0, A, b, i, i-1)
+
+        ### Calculate the result
+        beta = norm(r0)
+        ym_i .= h_i\(beta*e_i)
+        x_sol .= x0 + v_i[:,1:end-1]*ym_i
 
         err = norm(A*x_sol - b, Inf)
 
@@ -49,14 +60,12 @@ end
 """
     mygmres!(v, h, omega, ...)
 
-Calculates the solution given a number of iterations. 
-Essentially the Arnoldi iteration algorithm, but the linear solve is in here as well... for ease of access. 
+The Arnoldi iteration algorithm to generate the Krylov vectors. Note it generates the vectors in place. 
 
 **Inputs**
 """
-function mygmres!(v, h, omega, r0, x0, A, b, iters, current_iter)
+function Arnoldi!(v, h, omega, r0, x0, A, b, iters, current_iter)
     
-
     ### Initial errors and Krylov vector. 
     r0 .= b - A*x0
     beta = norm(r0)
@@ -81,14 +90,4 @@ function mygmres!(v, h, omega, r0, x0, A, b, iters, current_iter)
         # Calculate the next Krylov vector
         v[:,j+1] .= omega/h[j+1,j]
     end
-
-    ### Error vector? 
-    e1 = zeros(iters+1)
-    e1[1] = 1
-
-    ### Calculate the result
-    ym = h\(beta*e1)
-    xm = x0 + v[:,1:end-1]*ym
-    
-    return xm
 end

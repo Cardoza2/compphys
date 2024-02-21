@@ -160,6 +160,8 @@ end
     y_gold = A\b
     err =  maximum(y_test .- y_gold)
     @test isapprox(err, 0., atol=1e-12)
+
+    # @time mygmres(iters, b, x0, n, I(n), A; tolerance=1e-12)
     
 end
 
