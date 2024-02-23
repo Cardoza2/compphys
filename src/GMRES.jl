@@ -32,6 +32,7 @@ function mygmres(iters, b, x0, n, M, A; tolerance=1e-6, verbose::Bool=false)
 
     e1 = zeros(iters+1) #Error vector?
     e1[1] = 1
+    err = 2*tolerance
 
     for i = 2:iters #todo: skipping some might be more efficient
         v_i = view(v, :, 1:i+1)
@@ -49,14 +50,14 @@ function mygmres(iters, b, x0, n, M, A; tolerance=1e-6, verbose::Bool=false)
         err = norm(A*x_sol - b, Inf)
 
         if err<=tolerance
-            return x_sol
+            return x_sol, err
         end
     end
 
     if verbose
         @warn("mygres(): Maximum number of iterations hit without converging.")
     end
-    return x_sol
+    return x_sol, err
 end
 
 """

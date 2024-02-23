@@ -1,3 +1,4 @@
+using FLOWMath, QuadGK
 
 """
     meshproblem(; domain=(0,1), n_elems=50)
@@ -111,5 +112,86 @@ function evaluate_basis(x, mesh; weights=ones(length(mesh)-2))
 end
 
 
+function A1(i, j, mesh)
+    if i+1==j
+        top = -(mesh[j]-mesh[i])
+        bot = (mesh[i+1]-mesh[i])*(mesh[j]-mesh[j-1])
+        return top/bot
+
+    elseif i == j+1
+        top = -(mesh[i]-mesh[j])
+        bot = (mesh[i]-mesh[i-1])*(mesh[j+1]-mesh[j])
+        return top/bot
+
+    elseif i == j
+        t1 = 1/(mesh[i]-mesh[i-1])
+        t2 = 1/(mesh[i+1]-mesh[i])
+        return t1 + t2
+
+    else
+        return 0
+    end
+end
+
+function A2(i, j, mesh)
+    if i == j+1
+        top = (mesh[i]^2 - mesh[i-1]^2)/2 - mesh[j]*(mesh[i] - mesh[i-1])
+        bot = (mesh[j+1]-mesh[j])*(mesh[i]-mesh[i-1])
+        return 1 - top/bot
+
+    elseif i+1 == j
+        top = mesh[j-1]*(mesh[i+1]-mesh[i]) - (mesh[i+1]^2 - mesh[i]^2)/2
+        bot = (mesh[j]-mesh[j-1])*(mesh[i+1]-mesh[i])
+        return top/bot
+
+    elseif i==j
+        top1 = (mesh[i]^2 + mesh[i-1]^2)/2 - mesh[i]*mesh[i-1]
+        bot1 = (mesh[i]-mesh[i-1])^2
+
+        top2 = (mesh[i+1]^2 + mesh[i]^2)/2 - mesh[i]*mesh[i+1]
+        bot2 = (mesh[i+1] - mesh[i])^2
+
+        return top1/bot1 - 1 + top2/bot2
+    else
+        return 0
+    end
+end
 
 
+function generate_A(lambda, mesh)
+    n = length(mesh)-2
+
+    A = zeros(n, n)
+    ### Find A
+    for i = 1:n
+        for j = 1:n
+            A[i, j] = A1(j+1, i+1, mesh)
+            A[i, j] += lambda*A2(j+1, i+1, mesh)
+        end
+    end
+
+    return A
+end
+
+function bval(i, mesh)
+    top1 = (mesh[i]^2 - mesh[i-1]^2)/2 - mesh[i-1]*(mesh[i]-mesh[i-1])
+    bot1 = (mesh[i]-mesh[i-1])
+
+    t2 = mesh[i+1]-mesh[i]
+
+    top3 = (mesh[i+1]^2 - mesh[i]^2)/2 - mesh[i]*(mesh[i+1]-mesh[i])
+    bot3 = (mesh[i+1]-mesh[i]) 
+
+    return top1/bot1 + t2 - top3/bot3
+end
+
+function generate_b(lambda, mesh)
+    n = length(mesh)-2
+
+    b = zeros(n)
+    for i = 1:n
+        b[i] = bval(i+1, mesh)
+    end
+
+    return b
+end
