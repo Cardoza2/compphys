@@ -18,7 +18,7 @@ function mygmres(iters, b, x0, n, M, A; tolerance=1e-6, verbose::Bool=false)
     M_temp .= M
     M_inv = inv(M_temp)
     A = sparse(M_inv*A)
-    b = sparse(M_inv*b)
+    b = M_inv*b
 
     x_sol = deepcopy(x0)
 
