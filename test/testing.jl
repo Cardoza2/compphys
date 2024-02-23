@@ -235,7 +235,7 @@ end
     b = [1.; 8; 2]
 
     x0 = [0.,0,0]
-    xstar =  mygmres(3, b, x0, 3, I(3), A)
+    xstar, err =  mygmres(3, b, x0, 3, I(3), A)
     xtrue = A\b
 
     @test isapprox(xstar, xtrue)
@@ -248,7 +248,7 @@ end
     x0 = zeros(n)
     iters = 20
 
-    y_test = mygmres(iters, b, x0, n, I(n), A; tolerance=1e-12)
+    y_test, err = mygmres(iters, b, x0, n, I(n), A; tolerance=1e-12)
     y_gold = A\b
     err =  maximum(y_test .- y_gold)
     @test isapprox(err, 0., atol=1e-12)

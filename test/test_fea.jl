@@ -20,23 +20,23 @@ function print_mat(A)
 end
 
 
-mesh = meshproblem(;n_nodes=12)
+mesh = meshproblem(;n_nodes=50)
 
-#Todo: Answer is shifted if the number of nodes is odd (even number of elements).
-A = generate_A(lambda, mesh)' #Todo: Works up to num_nodes=12
+
+A = generate_A(lambda, mesh) 
 b = generate_b(lambda, mesh)
 
 # display(A)
 # display(b)
 
-# n = length(b)
+n = length(b)
 
-u_weights = A\b
-# # u_guess = zeros(n)
-# # u_guess = rand(n)
-# # M = Diagonal(ones(n))
+# u_weights = A\b
+u_guess = zeros(n)
+# u_guess = rand(n)
+M = Diagonal(ones(n))
 
-# # u_weights = mygmres(n, b, u_guess, n, M, A; tolerance=1e-8)
+u_weights, err = mygmres(n, b, u_guess, n, M, A; tolerance=1e-8)
 
 u(x) = evaluate_basis(x, mesh; weights=u_weights)
 

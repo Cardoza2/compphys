@@ -162,23 +162,11 @@ function generate_A(lambda, mesh)
     n = length(mesh)-2
 
     A = zeros(n, n)
-    ### Find A1
+    ### Find A
     for i = 1:n
         for j = 1:n
-            # val, _  = quadgk(x -> hatfunc_deriv(x, i+1, mesh)*hatfunc_deriv(x, j+1, mesh), mesh[1], mesh[end], rtol=1e-12) #Note: Inherent error because I'm numerically integrating..
-            # A[i, j] = val
-
-            A[i, j] = A1(i+1, j+1, mesh)
-        end
-    end
-
-    ### Find A2 
-    for i = 1:n
-        for j = 1:n
-            # val, _  = quadgk(x -> hatfunc_deriv(x, i+1, mesh)*hatfunction(x, j+1, mesh), mesh[1], mesh[end], rtol=1e-12)
-            # A[i, j] += lambda*val
-
-            A[i, j] += A2(i+1, j+1, mesh)
+            A[i, j] = A1(j+1, i+1, mesh)
+            A[i, j] += lambda*A2(j+1, i+1, mesh)
         end
     end
 
@@ -202,9 +190,6 @@ function generate_b(lambda, mesh)
 
     b = zeros(n)
     for i = 1:n
-        # val, _  = quadgk(x -> hatfunction.(x, Ref(i+1), Ref(mesh)), 0, 1, rtol=1e-8)
-        # b[i] = val
-
         b[i] = bval(i+1, mesh)
     end
 
