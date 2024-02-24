@@ -1,4 +1,4 @@
-using FLOWMath, QuadGK
+using SparseArrays
 
 """
     meshproblem(; domain=(0,1), n_elems=50)
@@ -161,7 +161,7 @@ end
 function generate_A(lambda, mesh)
     n = length(mesh)-2
 
-    A = zeros(n, n)
+    A = spzeros(n, n)
     ### Find A
     for i = 1:n
         for j = 1:n
@@ -188,7 +188,7 @@ end
 function generate_b(lambda, mesh)
     n = length(mesh)-2
 
-    b = zeros(n)
+    b = zeros(n) #Doesn't need to be sparse since b is dense.
     for i = 1:n
         b[i] = bval(i+1, mesh)
     end
