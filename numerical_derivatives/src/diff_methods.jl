@@ -24,3 +24,7 @@ function chebyshev(f, x; domain=(-1, 1), order=200)
 
     return gapprox
 end
+
+function forward_AD(f, x; optargs...)
+    return ForwardDiff.derivative(f,x; optargs...)
+end
