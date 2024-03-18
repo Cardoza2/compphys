@@ -28,3 +28,15 @@ end
 function forward_AD(f, x; optargs...)
     return ForwardDiff.derivative(f,x; optargs...)
 end
+
+function ddx(f, x, method; optargs...)
+    if method in ("chebyshev", "Chebyshev", "c", "C")
+        return chebyshev(f,x; optargs...)
+    elseif method in ("richardson", "Richardson", "r", "R")
+        return richardson(f, x; optargs...)
+    elseif method in ("forward_AD", "forwarddiff", "AD", "ad", "a", "A")
+        return forward_AD(f, x; optargs...)
+    else
+        error("differentiation method $method not recognized! Choose from ('chebyshev', 'richardson', 'AD').")
+    end
+end
